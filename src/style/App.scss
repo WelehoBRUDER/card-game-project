@@ -1,0 +1,48 @@
+body {
+  background: black;
+}
+
+.main {
+  background: rgb(20, 13, 46);
+  width: 100vw;
+  height: 56.25vw;
+  max-height: 100vh;
+  position: fixed;
+  margin: auto;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+
+  p {
+    color: white;
+  }
+
+  .chat {
+    width: 80%;
+    height: 100%;
+
+    .messages {
+      position: absolute;
+      left: 0;
+      top: 0;
+      margin: 0;
+      width: inherit;
+      height: 90%;
+      border: 2px solid red;
+      box-sizing: border-box;
+    }
+
+    .inputContainer {
+      display: flex;
+      position: absolute;
+      left: 0;
+      top: 90%;
+
+      .chatInput {
+        width: 1000%;
+        height: 100%;
+      }
+    }
+  }
+}
