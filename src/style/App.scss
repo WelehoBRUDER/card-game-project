@@ -35,6 +35,22 @@ body {
       overflow-y: auto;
     }
 
+    .registerTime {
+      position: absolute;
+      left: 80.5%;
+    }
+
+    .userList {
+      position: absolute;
+      left: 80.5%;
+      top: 7.5%;
+      border: 2px solid blue;
+      padding: 10px;
+      p {
+        margin: 0;
+      }
+    }
+
     .inputContainer {
       display: flex;
       position: absolute;

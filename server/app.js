@@ -14,6 +14,9 @@ class User {
   constructor(user) {
     this.id = user.id;
     this.name = user.name;
+    this.timeRegistered = user.timeRegistered;
+    this.dontEmitRegister = user.dontEmitRegister;
+    this.processedByServer = user.processedByServer;
   }
 }
 
@@ -26,22 +29,23 @@ io.on("connection", (socket) => {
   socket.emit("new-user", socket.id);
 
   socket.on("register-new-user", (data)=>{
-    console.log(data);
     const date = new Date();
-    users[socket.id] = new User(data);
     const time = `${date.getHours()}.${date.getMinutes()}`;
+    users[socket.id] = new User({...data, timeRegistered: time, processedByServer: true});
     messageArray.push(`[${time}][§/CYAN/SERVER§]: §/GOLD/${users[socket.id].name}§ has connected, say hello!`);
     io.emit("server-emit-message", [...messageArray]);
+    socket.emit("update-user-data", users[socket.id]);
+    io.emit("update-user-list", users);
   });
 
   socket.on("user-changed-name", (data)=>{
-    console.log(data);
     const date = new Date();
     const time = `${date.getHours()}.${date.getMinutes()}`;
-    let message = `[${time}][§/CYAN/SERVER§]: User '§/GOLD/${users[socket.id].name}§' has changed their username to '§/GOLD/${data.name}§'`;
+    let message = `[${time}][§/CYAN/SERVER§]: '§/GOLD/${users[socket.id].name}§' has changed their username to '§/GOLD/${data.name}§'`;
     users[socket.id].name = data.name;
     messageArray.push(message);
     io.emit("server-emit-message", [...messageArray]);
+    io.emit("update-user-list", users);
   });
 
   socket.on("client-message", (data)=>{
@@ -54,7 +58,9 @@ io.on("connection", (socket) => {
     const date = new Date();
     const time = `${date.getHours()}.${date.getMinutes()}`;
     messageArray.push(`[${time}][§/CYAN/SERVER§]: §/GOLD/${users[socket.id].name}§ has disconnected.`);
+    delete users[socket.id];
     io.emit("user-disconnected", [...messageArray]);
+    io.emit("update-user-list", users);
   });
 }); 
 

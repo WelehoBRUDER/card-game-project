@@ -3,7 +3,12 @@ import "./style/App.scss";
 import { socket } from "./service/socket";
 
 function App() {
-  const [user, setUser] = useState({ id: "", name: "user" }); // Client data, also stored in server.
+  const [user, setUser] = useState({
+    id: "",
+    name: "user",
+    timeRegistered: "",
+  }); // Client data, also stored in server.
+  const [userList, setUserList] = useState([]); // Store all users to display a list
   const [inputText, setInputText] = useState(""); // State used for text area
   const [messageArray, setMessageArray] = useState([]); // Messages stored by the server
 
@@ -18,6 +23,11 @@ function App() {
       }
     });
 
+    // Server has processed us, time to refresh our memory!
+    socket.on("update-user-data", (data) => {
+      setUser(data); // We get all sorts of cool information from the server!
+    });
+
     socket.on("server-emit-message", (data) => {
       // Server has sent us a message
       setMessageArray(data); // Replace old array with new one
@@ -28,13 +38,17 @@ function App() {
       setMessageArray(data); // Replace old array with new one, again.
     });
 
+    socket.on("update-user-list", (data) => {
+      setUserList(data);
+    });
+
     return () => socket.disconnect();
   }, []);
 
   // This hook is used when first connecting to the server
   // And when changing user properties
   useEffect(() => {
-    if (user.id !== "" && !user.dontEmitRegister) {
+    if (user.id !== "" && !(user.dontEmitRegister || user.processedByServer)) {
       socket.emit("register-new-user", user); // Sends request to server, server then saves new user
     } else if (user.dontEmitRegister) {
       socket.emit("user-changed-name", user); // User has changed name, send request to server to confirm it.
@@ -111,7 +125,13 @@ function App() {
       newName = prompt(usernameConds[nameIsNotAllowed(newName)]);
     }
     if (nameIsNotAllowed(newName) === "null") return;
-    setUser({ id: user.id, name: newName, dontEmitRegister: true });
+    setUser({
+      id: user.id,
+      name: newName,
+      dontEmitRegister: true,
+      processedByServer: user.processedByServer,
+      timeRegistered: user.timeRegistered,
+    });
   }
 
   const messagesBottom = useRef(null); // Make reference to dummy
@@ -132,6 +152,16 @@ function App() {
           <div ref={messagesBottom} />{" "}
           {/*Dummy div to reference for auto scroll*/}
         </div>
+        <p className="registerTime">
+          Signed up at: {user.timeRegistered}
+          <br></br>
+          Username: {user.name}
+        </p>
+        <div className="userList">
+          {Object.values(userList).map((user) => {
+            return <p>{user.name}</p>;
+          })}
+        </div>
         <div className="inputContainer">
           <textarea
             type="text"
@@ -139,7 +169,7 @@ function App() {
             className="chatInput"
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
+              if (e.key === "Enter" && !e.shiftKey) {
                 sendMsg();
               }
             }}
