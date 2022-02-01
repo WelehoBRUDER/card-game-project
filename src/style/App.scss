@@ -31,6 +31,8 @@ body {
       height: 90%;
       border: 2px solid red;
       box-sizing: border-box;
+      overflow: hidden;
+      overflow-y: auto;
     }
 
     .inputContainer {
