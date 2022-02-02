@@ -41,7 +41,7 @@ io.on("connection", (socket) => {
   socket.on("user-changed-name", (data)=>{
     const date = new Date();
     const time = `${date.getHours()}.${date.getMinutes()}`;
-    let message = `[${time}][§/CYAN/SERVER§]: '§/GOLD/${users[socket.id].name}§' has changed their username to '§/GOLD/${data.name}§'`;
+    let message = `[${time}][§/CYAN/SERVER§]: §/GOLD/${users[socket.id].name}§ has changed their username to §/GOLD/${data.name}§`;
     users[socket.id].name = data.name;
     messageArray.push(message);
     io.emit("server-emit-message", [...messageArray]);

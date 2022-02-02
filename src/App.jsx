@@ -49,7 +49,8 @@ function App() {
   // And when changing user properties
   useEffect(() => {
     if (user.id !== "" && !(user.dontEmitRegister || user.processedByServer)) {
-      socket.emit("register-new-user", user); // Sends request to server, server then saves new user
+      if (user.name.includes("user-")) changeUserName(true);
+      else socket.emit("register-new-user", user); // Sends request to server, server then saves new user
     } else if (user.dontEmitRegister) {
       socket.emit("user-changed-name", user); // User has changed name, send request to server to confirm it.
     }
@@ -102,6 +103,8 @@ function App() {
         return "tooLong";
       case name.toUpperCase() === "SERVER":
         return "reserved";
+      case name.includes("§"):
+        return "specialChar";
       default:
         return "allowed";
     }
@@ -112,10 +115,11 @@ function App() {
     tooShort: "Username has to be atleast 3 characters long!",
     tooLong: "Username can't be more than 24 characters long!",
     reserved: "That name is reserved! Pick something else!",
+    specialChar: "Username contains special characters not allowed in names!",
   };
 
   // Simple function to let user change their name
-  function changeUserName() {
+  function changeUserName(emitRegister = false) {
     let newName = prompt("New name?"); // Prompt user for the new name
     // Make sure the name is valid
     while (
@@ -125,13 +129,23 @@ function App() {
       newName = prompt(usernameConds[nameIsNotAllowed(newName)]);
     }
     if (nameIsNotAllowed(newName) === "null") return;
-    setUser({
-      id: user.id,
-      name: newName,
-      dontEmitRegister: true,
-      processedByServer: user.processedByServer,
-      timeRegistered: user.timeRegistered,
-    });
+    if (emitRegister) {
+      setUser({
+        id: user.id,
+        name: newName,
+        dontEmitRegister: false,
+        processedByServer: false,
+        timeRegistered: "",
+      });
+    } else {
+      setUser({
+        id: user.id,
+        name: newName,
+        dontEmitRegister: true,
+        processedByServer: user.processedByServer,
+        timeRegistered: user.timeRegistered,
+      });
+    }
   }
 
   const messagesBottom = useRef(null); // Make reference to dummy
