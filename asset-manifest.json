@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/card-game-project/static/css/main.31f1c656.css",
-    "main.js": "/card-game-project/static/js/main.2aef90d5.js",
+    "main.js": "/card-game-project/static/js/main.e430c906.js",
     "index.html": "/card-game-project/index.html",
     "main.31f1c656.css.map": "/card-game-project/static/css/main.31f1c656.css.map",
-    "main.2aef90d5.js.map": "/card-game-project/static/js/main.2aef90d5.js.map"
+    "main.e430c906.js.map": "/card-game-project/static/js/main.e430c906.js.map"
   },
   "entrypoints": [
     "static/css/main.31f1c656.css",
-    "static/js/main.2aef90d5.js"
+    "static/js/main.e430c906.js"
   ]
 }
