@@ -33,6 +33,16 @@ body {
       box-sizing: border-box;
       overflow: hidden;
       overflow-y: auto;
+
+      .message {
+        margin: 0;
+        margin-left: 10px;
+        text-shadow: 0 0 4px black;
+
+        span {
+          font-size: 20px;
+        }
+      }
     }
 
     .registerTime {

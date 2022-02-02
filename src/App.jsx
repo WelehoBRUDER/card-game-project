@@ -19,7 +19,8 @@ function App() {
       // Server is welcoming us
       if (user.id === "") {
         // We don't yet exist, time to change that!
-        setUser({ id: data, name: `user-${data.substring(15)}` }); // Define user in client, this triggers another hook further down
+        setUserList(data.users);
+        setUser({ id: data.id, name: `user-${data.id.substring(15)}` }); // Define user in client, this triggers another hook further down
       }
     });
 
@@ -59,7 +60,11 @@ function App() {
   // Sends a request to server with all of the text typed into the box.
   function sendMsg() {
     const date = new Date(); // At what time was this message sent
-    const time = `[${date.getHours()}.${date.getMinutes()}]`; // Get hours and minutes for neat display
+    const time = `[${
+      ("0" + date.getHours()).slice(-2).toString() +
+      "." +
+      ("0" + date.getMinutes()).slice(-2).toString()
+    }]`; // Get hours and minutes for neat display
     socket.emit("client-message", {
       txt: inputText,
       user: user.name,
@@ -101,13 +106,25 @@ function App() {
         return "tooShort";
       case name.length > 24:
         return "tooLong";
+      case name.trim().length < 3:
+        return "tooShort";
       case name.toUpperCase() === "SERVER":
         return "reserved";
       case name.includes("§"):
         return "specialChar";
+      case userNameAlreadyExists(name):
+        return "mustBeUnique";
       default:
         return "allowed";
     }
+  }
+
+  function userNameAlreadyExists(name) {
+    let exists = false;
+    Object.values(userList).forEach((_user) => {
+      if (_user.name === name) exists = true;
+    });
+    return exists;
   }
 
   // List of messages the user recieves when trying to input an invalid username
@@ -116,11 +133,13 @@ function App() {
     tooLong: "Username can't be more than 24 characters long!",
     reserved: "That name is reserved! Pick something else!",
     specialChar: "Username contains special characters not allowed in names!",
+    mustBeUnique:
+      "Username must be unique! Someone else is already using that name!",
   };
 
   // Simple function to let user change their name
   function changeUserName(emitRegister = false) {
-    let newName = prompt("New name?"); // Prompt user for the new name
+    let newName = prompt("Choose your username"); // Prompt user for the new name
     // Make sure the name is valid
     while (
       nameIsNotAllowed(newName) !== "allowed" &&
@@ -129,6 +148,7 @@ function App() {
       newName = prompt(usernameConds[nameIsNotAllowed(newName)]);
     }
     if (nameIsNotAllowed(newName) === "null") return;
+    alert("Welcome " + newName + "!");
     if (emitRegister) {
       setUser({
         id: user.id,
@@ -172,8 +192,13 @@ function App() {
           Username: {user.name}
         </p>
         <div className="userList">
-          {Object.values(userList).map((user) => {
-            return <p>{user.name}</p>;
+          {Object.values(userList).map((_user) => {
+            return (
+              <p title={user.id === _user.id ? "This is you" : ""}>
+                {user.id === _user.id ? "👑" : ""}
+                {_user.name}
+              </p>
+            );
           })}
         </div>
         <div className="inputContainer">
