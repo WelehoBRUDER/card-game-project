@@ -45,7 +45,7 @@ io.on("connection", (socket) => {
       ("0" + date.getMinutes()).slice(-2).toString()
     }`;
     users[socket.id] = new User({...data, timeRegistered: time, processedByServer: true});
-    messageArray.push(`[${time}][§/CYAN/SERVER§]: §/GOLD/${users[socket.id].name}§ has connected, say hello!`);
+    messageArray.push({text: `[${time}][§/CYAN/SERVER§]: §/GOLD/${users[socket.id].name}§ has connected, say hello!`});
     io.emit("server-emit-message", [...messageArray]);
     socket.emit("update-user-data", users[socket.id]);
     io.emit("update-user-list", users);
@@ -60,15 +60,18 @@ io.on("connection", (socket) => {
     }`;
     let message = `[${time}][§/CYAN/SERVER§]: §/GOLD/${users[socket.id].name}§ has changed their username to §/GOLD/${data.name}§`;
     users[socket.id].name = data.name;
-    messageArray.push(message);
+    messageArray.push({text: message});
     io.emit("server-emit-message", [...messageArray]);
     io.emit("update-user-list", users);
   });
 
   socket.on("client-message", (data)=>{
-    let message = `${data.date}[§/GOLD/${data.user}§]: ${data.txt}`;
-    messageArray.push(message);
-    io.emit("server-emit-message", [...messageArray]);
+    if(data.txt.startsWith("/")) command(data, socket);
+    else {
+      let message = `${data.date}[§/GOLD/${data.user}§]: ${data.txt}`;
+      messageArray.push({text: message});
+      io.emit("server-emit-message", [...messageArray]);
+    }
   });
 
   socket.on("disconnect", ()=> {
@@ -78,11 +81,39 @@ io.on("connection", (socket) => {
       "." +
       ("0" + date.getMinutes()).slice(-2).toString()
     }`;
-    messageArray.push(`[${time}][§/CYAN/SERVER§]: §/GOLD/${users[socket.id].name}§ has disconnected.`);
+    let name = users[socket.id];
+    if(name) name = name.name;
+    else if(!name) name = "Guest";
+    messageArray.push({text: `[${time}][§/CYAN/SERVER§]: §/GOLD/${name}§ has disconnected.`});
     delete users[socket.id];
     io.emit("user-disconnected", [...messageArray]);
     io.emit("update-user-list", users);
   });
 }); 
+
+function command(data, socket) {
+  let data_text = data.txt;
+  data_text = data_text.replace("/", "");
+  const commandType = data_text.split(" ")[0];
+  const commandTarget = data_text.split(" ")[1];
+  console.log(commandType);
+  console.log(commandTarget);
+  if(commandType.toUpperCase() === "WHISPER") {
+    let target = Object.values(users).find(user=>user.name === commandTarget);
+    if(!target) return socket.emit("wrong-user-name-in-whisper", commandTarget);
+    else if(target) {
+      data_text = data_text.replace(commandType, "").replace(commandTarget, "");
+      const date = new Date();
+      const time = `${
+        ("0" + date.getHours()).slice(-2).toString() +
+        "." +
+        ("0" + date.getMinutes()).slice(-2).toString()
+      }`;
+      let msg = `[${time}]§/#49CDEE/[whisper to ${target.name}][${users[socket.id].name}]: ${data_text}§`;
+      messageArray.push({text: msg, whisper: {from: socket.id, to: target.id}});
+      io.emit("server-emit-message", [...messageArray]);
+    }
+  }
+}
 
 server.listen(port, ()=> console.log(`Listening on port ${port}`));

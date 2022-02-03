@@ -168,6 +168,10 @@ function App() {
     }
   }
 
+  function whisperToUser(name) {
+    setInputText(`/whisper ${name} `);
+  }
+
   const messagesBottom = useRef(null); // Make reference to dummy
 
   useEffect(() => {
@@ -181,7 +185,11 @@ function App() {
       <div className="chat">
         <div className="messages">
           {messageArray.map((txt) => {
-            return createMessage(txt);
+            if (txt.whisper) {
+              if (txt.whisper.from === user.id || txt.whisper.to === user.id) {
+                return createMessage(txt.text);
+              }
+            } else if (!txt.whisper) return createMessage(txt.text);
           })}
           <div ref={messagesBottom} />{" "}
           {/*Dummy div to reference for auto scroll*/}
@@ -194,7 +202,10 @@ function App() {
         <div className="userList">
           {Object.values(userList).map((_user) => {
             return (
-              <p title={user.id === _user.id ? "This is you" : ""}>
+              <p
+                title={user.id === _user.id ? "This is you" : ""}
+                onClick={() => whisperToUser(_user.name)}
+              >
                 {user.id === _user.id ? "👑" : ""}
                 {_user.name}
               </p>
