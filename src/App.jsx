@@ -152,7 +152,7 @@ function App() {
     if (emitRegister) {
       setUser({
         id: user.id,
-        name: newName,
+        name: newName.replace(/\s/g, "_"),
         dontEmitRegister: false,
         processedByServer: false,
         timeRegistered: "",
@@ -160,7 +160,7 @@ function App() {
     } else {
       setUser({
         id: user.id,
-        name: newName,
+        name: newName.replace(/\s/g, "_"),
         dontEmitRegister: true,
         processedByServer: user.processedByServer,
         timeRegistered: user.timeRegistered,

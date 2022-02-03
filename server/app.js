@@ -9,7 +9,6 @@ const index = require("./routes/index");
 const app = express();
 app.use(index);
 app.use(cors());
-app.use(express());
 const messageArray = [];
 const users = {};
 
@@ -30,7 +29,10 @@ const io = require("socket.io")(server, {
     origin: "*",
     methods: ["GET", "POST"],
     credentials: true
-  }
+  },
+  secure: true,
+  reconnect: true,
+  rejectUnauthorized: false
 });
 
 io.on("connection", (socket) => {
@@ -110,7 +112,7 @@ function command(data, socket) {
         ("0" + date.getMinutes()).slice(-2).toString()
       }`;
       let msg = `[${time}]§/#49CDEE/[whisper to ${target.name}][${users[socket.id].name}]: ${data_text}§`;
-      messageArray.push({text: msg, whisper: {from: socket.id, to: target.id}});
+      messageArray.push({text: msg.trim(), whisper: {from: socket.id, to: target.id}});
       io.emit("server-emit-message", [...messageArray]);
     }
   }
